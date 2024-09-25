@@ -1,0 +1,45 @@
+---
+  - name: Catalogue deployment playbook
+    hosts: Catalogue
+    become: yes
+    tasks:
+      - name: install packages
+        yum:
+          name: "{{ item }}"
+          state: latest
+        loop:
+          - nodejs 
+          - make
+          - gcc-c++
+      - name: create roboshop user 
+        user:
+          name: roboshop
+          state: present 
+      - name: download application files
+        get_url:
+          url: https://github.com/rshaik4devops/catalogue/archive/main.zip
+          dest: /tmp/catalogue.zip
+        become_user: roboshop
+      - name: extract application
+        unarchive:
+          src: /tmp/catalogue.zip
+          dest: /home/roboshop
+          remote_src: yes
+        become_user: roboshop
+      - name: run npm install command
+        command: npm install
+        become_user: roboshop
+        args:
+           chdir: /home/roboshop/catalogue-main
+      - name: copy systemd file
+        copy:
+          src: /home/roboshop/catalogue-main/systemd.service
+          dest: /etc/systemd/system/catalogue.service
+          remote_src: yes
+      - name: start the service
+        systemd:
+           name: catalogue
+           enabled: yes
+           state: started
+
+

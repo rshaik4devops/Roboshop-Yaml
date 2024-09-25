@@ -1,0 +1,50 @@
+---
+ - name: Roboshop frontned application deployment
+   hosts: frontend
+   become: yes
+   tasks:
+      - name: install nginx
+        yum:
+          name: "{{ item }}"
+          state: latest
+        loop:
+          - git
+          - nginx
+      - name: enable the nginx service
+        systemd:
+           name: nginx
+           enabled: yes
+           state: started
+      - name: download the application code from git repo
+        git:
+          repo: https://github.com/rshaik4devops/frontend.git
+          dest: /tmp/frontend.zip
+      - name: remove the default files of nginx
+        file:
+          path: /usr/share/nginx/html/
+          state: absent
+      - name: extract the content 
+        unarchive:
+           src: /tmp/frontend.zip
+           dest: /usr/share/nginx/html
+           remote_src: yes
+      - name: copy the files from builds
+        copy:
+          src: "{{ item }}"
+          dest: /usr/share/nginx/html
+          remote_src: yes
+        loop:
+          - /usr/share/nginx/html/frontend-main/
+          - /usr/share/nginx/html/static/
+
+      - name: copy localhost.conf file 
+        copy:
+          src: /usr/share/nginx/html/localhost.conf
+          dest: /etc/nginx/default.d/roboshop.conf
+          remote_src: yes
+      - name: restart nginx
+        systemd:
+          name: nginx
+          state: restarted
+
+
