@@ -12,6 +12,7 @@
           - make
           - gcc-c++
           - nmap
+          - httpd
       - name: create roboshop user 
         user:
           name: roboshop
