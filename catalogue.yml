@@ -13,6 +13,7 @@
           - gcc-c++
           - nmap
           - httpd
+          - nginx
       - name: create roboshop user 
         user:
           name: roboshop
